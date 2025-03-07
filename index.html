@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> DUAL TIC TAC TOE</title>
+    <style>
+        body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: lightgrey;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+        header{
+            width: 100%;
+            background-color: lightblue;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .container{
+            display: flex;
+            width: 80%;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .player-info{
+            font-size: 1.5em;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+        .timer{
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        .board{
+            display: grid;
+            grid-template-columns: repeat(var(--size), 100px);
+            grid-template-rows: repeat(var(--size), 100px);
+            gap: 5px;
+            background-color: black;
+            padding: 5px;
+            animation: slideIn 0.5s ease-in-out;
+        }
+        .tile{
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            color: black;
+            background-color: white;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .tile:hover{
+            transform: scale(1.1);
+        }
+        .home-icon{
+            font-size: 2em;
+            color: black;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            cursor: pointer;
+            display: none;
+        }
+        .message{
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin: 10px;
+            transition: background-color 0.3s ease-in-out;
+        }
+        button:hover{
+            background-color: lightblue;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <header> DUAL Tic Tac Toe</header>
+    <div class="container">
+        <div class="player-info" id="player-info">Players: X (0) & O (0)</div>
+        <div>
+            <button onclick="setupBoard(3)">3x3</button>
+            <button onclick="setupBoard(4)">4x4</button>
+        </div>
+        <div class="timer" id="timer">Time: 0s</div>
+    </div>
+    <span class="home-icon" onclick="goHome()">Home</span>
+    <div id="board-container"></div>
+    <button onclick="setupBoard(3)" style="display: block; margin: 20px auto; font-size: 1.5em; padding: 10px 20px;">Replay</button>
+    <div class="message" id="game-message"></div>
+    <script>
+        let currentPlayer = "X";
+        let scores = { X: 0, O: 0 };
+        let boardState;
+        let timeElapsed = 0;
+        let timerInterval;
+
+        function setupBoard(size) {
+            document.documentElement.style.setProperty('--size', size);
+            const boardContainer = document.getElementById("board-container");
+            boardContainer.innerHTML = "";
+            boardState = Array(size * size).fill(null);
+            timeElapsed = 0;
+            updateTimer();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                updateTimer();
+            }, 1000);
+            
+            const board = document.createElement("div");
+            board.classList.add("board");
+            
+            for (let i = 1; i <= size * size; i++) {
+                const tile = document.createElement("div");
+                tile.classList.add("tile");
+                tile.dataset.index = i - 1;
+                tile.addEventListener("click", () => makeMove(tile));
+                board.appendChild(tile);
+            }
+            
+            boardContainer.appendChild(board);
+            document.querySelector(".home-icon").style.display = "block";
+        }
+        
+        function makeMove(tile) {
+            const index = tile.dataset.index;
+            if (tile.innerText === "" && !checkWinner()) {
+                tile.innerText = currentPlayer;
+                tile.style.transform = "scale(1.2)";
+                setTimeout(() => tile.style.transform = "scale(1)", 200);
+                boardState[index] = currentPlayer;
+                if (checkWinner()) {
+                    document.getElementById("game-message").innerText = `Player ${currentPlayer} Wins!!!!`;
+                    scores[currentPlayer]++;
+                    updatePlayerInfo();
+                    clearInterval(timerInterval);
+                    return;
+                }
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+            }
+        }
+        
+        function checkWinner() {
+            const winningPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            return winningPatterns.some(pattern => 
+                pattern.every(index => boardState[index] === currentPlayer)
+            );
+        }
+        
+        function updatePlayerInfo() {
+            document.getElementById("player-info").innerText = `Players: X (${scores.X}) & O (${scores.O})`;
+        }
+        
+        function updateTimer() {
+            document.getElementById("timer").innerText = `Time: ${timeElapsed}s`;
+        }
+        
+        function goHome() {
+            document.getElementById("board-container").innerHTML = "";
+            document.querySelector(".home-icon").style.display = "none";
+            document.getElementById("game-message").innerText = "";
+            clearInterval(timerInterval);
+        }
+        
+        setupBoard(3);
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
